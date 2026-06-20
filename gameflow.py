@@ -5,6 +5,9 @@ import attacks as a
 import random
 from func import tap
 
+#from builderbot import Bbot_running
+
+
 
 # -----------------------------
 #   Surrender : Farming in Builder base
@@ -17,18 +20,33 @@ def tap_surrender_button():
 
 
 def confirm_surrender():
-    x = random.randint(200, 300)
-    y = random.randint(740, 820)
+    x = random.randint(1014, 1323)
+    y = random.randint(643, 752)
     tap(x, y)
 
 
 def tap_return_home():
     # Ajusta estos valores si tu botón está en otra zona
-    x = random.randint(800, 1100)
-    y = random.randint(750, 900)
+    x = random.randint(850, 1065)
+    y = random.randint(875, 950)
     tap(x, y)
 
+# -------------------------
+#  RECOGER ELIXIR ROSA
+# -------------------------
+def collect_pink_elixir():
+    x = random.randint(50, 200)
+    y = random.randint(300, 600)
+    tap(x, y)
+    t.sleep(1)
 
+# -------------------------
+#  COMPROBAR SI EL ALMACÉN ESTÁ LLENO
+#  (placeholder, tú pones la lógica real)
+# -------------------------
+def is_elixir_full():
+    # TODO: detección real
+    return False
 
 # -----------------------------
 #   FIND MATCH (buscar aldea)
@@ -79,7 +97,7 @@ def collect_loot():
 # -----------------------------
 #   CICLO DE ATAQUE FARM (1 ciclo)
 # -----------------------------
-def run_farm_cycle():
+def OLD_run_farm_cycle():
     find_match()
     t.sleep(2)          # ← necesario para que cargue la aldea
     a.BBFarm()          # ataque puro
@@ -97,31 +115,45 @@ def run_farm_cycle():
     wait_for_battle_end()
     collect_loot()
 
-
 def farm_until_full():
     while not is_elixir_full():
 
-        print(">>> Nuevo ciclo de 10 ataques <<<")
+        f.log(">>> Nuevo ciclo de 10 ataques <<<")
 
         for i in range(10):
-            print(f">>> Ataque {i+1}/10 <<<")
+            f.log(f">>> Ataque {i+1}/10 <<<")
+
+            # 0. Buscar aldea
+            find_match()
+            t.sleep(2)          # ← necesario para que cargue la aldea
 
             # 1. Atacar
-            BBFarm()
+            a.BBFarm()
 
             # 2. Rendirse
             tap_surrender_button()
-            time.sleep(1)
+            t.sleep(1)
 
             # 3. Confirmar rendición
+            #f.screenshot() 
             confirm_surrender()
-            time.sleep(2)
+            t.sleep(1)
 
             # 4. Volver a Home
+            f.log(">>> Return Home <<<")
+            #f.screenshot() 
             tap_return_home()
-            time.sleep(3)
+            t.sleep(1)
 
         # 5. Recoger elixir rosa
         collect_pink_elixir()
 
     print(">>> Almacén lleno. Fin del ciclo. <<<")
+    
+    Bbot_running.clear()
+
+
+
+
+
+

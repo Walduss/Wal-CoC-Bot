@@ -48,7 +48,9 @@ def bttn_stop():
 
 def Farm_loop():
     while Bbot_running.is_set():
-        gf.run_farm_cycle()
+        #gf.OLD_run_farm_cycle()
+        gf.farm_until_full()
+        
 
 
 # -----------------------------

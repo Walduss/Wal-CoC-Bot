@@ -134,7 +134,7 @@ def BBFarm():
     f.log("[BBF] Slot 1")
     Slot(1)
     f.log("[BBF] Tap inicial")
-    f.human_tap(1500, 1600, 550, 650)
+    f.human_tap(1400, 1600, 500, 700)
 
 #    f.tap(1535,585,p)
 
