@@ -1,6 +1,10 @@
 import func as f
 import time as t
 
+
+print(">>> ESTE ES EL ATTACKS.PY QUE SE ESTÁ EJECUTANDO <<<")
+
+
 p = '5554' # port
 
 def Position(n):
@@ -83,19 +87,36 @@ def MEKKA():
     Slot(5) #warden ability
     Slot(6) #king
 
+    
+
 def BB():
+    print(">>> entro en BB <<<")
+    f.log("[BB] Iniciando ataque BB()")
     f.swipe2(p)
+    f.log("[BB] Slot 1")
     Slot(1)
+    f.log("[BB] Tap inicial")
     f.tap(1535,585,p)
     t.sleep(0.5)
 
+    f.log("[BB] Slot 2")
     Slot(2)
     for x in range(6):
+        f.log(f"[BB] Soltando tropa {x+1}/6 en slot 2")
         f.tap(1535,585,p)
+        t.sleep(0.5)  # mio... quitar
+
     for x in range(2,8):
+        f.log(f"[BB] Seleccionando slot {x}")
         Slot(x)
-    
+
+        for x in range(6):
+            f.log(f"[BB] Soltando tropa {x+1}/6 en slot 2")
+            f.tap(1535,585,p)
+            t.sleep(0.5)  # mio... quitar
+
 def BB2():
+    f.log("[BB2] Iniciando ataque BB()")
     f.swipe2(p)
     Slot(1)
     f.tap(1535,585,p)
@@ -104,4 +125,28 @@ def BB2():
         f.tap(1535,585,p)
     for x in range(2,10):
         Slot(x)
+
+
+def SSFarm():
+    print(">>> entro en BBFarm <<<")
+    f.log("[BBF] Iniciando ataque BBF()")
+    f.swipe2(p)
+    f.log("[BBF] Slot 1")
+    Slot(1)
+    f.log("[BBF] Tap inicial")
+    f.human_tap(1500, 1600, 550, 650)
+
+#    f.tap(1535,585,p)
+
+    t.sleep(0.5)
+
+    f.log("[BBF] Slot 2")
+    Slot(2)
+    for x in range(6):
+        f.log(f"[BBF] Soltando tropa {x+1}/6 en slot 2")
+        f.human_tap(1500, 1600, 550, 650)
+        #f.tap(1535,585,p)
+        t.sleep(0.5)  # mio... quitar
+
+
     
