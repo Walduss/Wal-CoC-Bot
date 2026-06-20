@@ -1,5 +1,19 @@
-# Clash of Clans Bot (CoC Bot)
+# Clash of Clans Bot (Wal CoC Bot)
 
+Folked from other repository: 
+Credits to him, but was not working to me, at least Bulder base
+
+I am working to Fix it and adapt to my needs.
+
+Still in progress.
+
+Below info from original repo
+
+My comments:
+ - BuilderBot
+     - new button to farm only elixir, ..  find attacck and exit
+
+####  Original information ------
 ## Features
 
 - **Customisable Attacks:**  

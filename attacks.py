@@ -1,11 +1,11 @@
 import func as f
 import time as t
+import config
 
 
-print(">>> ESTE ES EL ATTACKS.PY QUE SE ESTÁ EJECUTANDO <<<")
 
 
-p = '5554' # port
+#p = '5554' # port
 
 def Position(n):
     if n == 1:
@@ -23,7 +23,7 @@ def Slot(n):  # tap on slot n
     xccord = 225-150
     for x in range(0,n):
         xccord += 150
-    f.tap(xccord, 925, p)
+    f.tap(xccord, 925)
 
 def droptrophies():
         f.find(p)
@@ -92,11 +92,11 @@ def MEKKA():
 def BB():
     print(">>> entro en BB <<<")
     f.log("[BB] Iniciando ataque BB()")
-    f.swipe2(p)
+    f.swipe2()
     f.log("[BB] Slot 1")
     Slot(1)
     f.log("[BB] Tap inicial")
-    f.tap(1535,585,p)
+    f.tap(1535,585)
     t.sleep(0.5)
 
     f.log("[BB] Slot 2")
@@ -127,10 +127,10 @@ def BB2():
         Slot(x)
 
 
-def SSFarm():
+def BBFarm():
     print(">>> entro en BBFarm <<<")
     f.log("[BBF] Iniciando ataque BBF()")
-    f.swipe2(p)
+    f.swipe2()
     f.log("[BBF] Slot 1")
     Slot(1)
     f.log("[BBF] Tap inicial")
@@ -139,14 +139,3 @@ def SSFarm():
 #    f.tap(1535,585,p)
 
     t.sleep(0.5)
-
-    f.log("[BBF] Slot 2")
-    Slot(2)
-    for x in range(6):
-        f.log(f"[BBF] Soltando tropa {x+1}/6 en slot 2")
-        f.human_tap(1500, 1600, 550, 650)
-        #f.tap(1535,585,p)
-        t.sleep(0.5)  # mio... quitar
-
-
-    

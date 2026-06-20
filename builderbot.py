@@ -11,9 +11,6 @@ import gameflow as gf
 #   CONFIGURACIÓN INICIAL
 # -----------------------------
 
-p = str(a.p)          # Puerto del emulador
-gf.set_port(p)        # Pasamos el puerto al gameflow
-
 Bbot_thread = None
 Bbot_running = threading.Event()
 

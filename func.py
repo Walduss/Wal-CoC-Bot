@@ -1,63 +1,65 @@
 import os
 import time as t
 from PIL import Image, ImageEnhance
-import easyocr
+#import easyocr
 import random as r
-
 import subprocess
 import random
 
-reader = easyocr.Reader(['en'])
+import config
+
+# reader = easyocr.Reader(['en'])
 
 def log(msg):
     pass  # será reemplazada por builderbot
 
-def OLD_screenshot(port, filename):
-    cmd = ['C:/Windows/platform-tools/adb.exe', '-s', f'emulator-{port}', 'exec-out', 'screencap', '-p']
+def OLD_screenshot(filename):
+    cmd = ['C:/LDPlayer/LDPlayer9/adb.exe', '-s', f'emulator-{config.ADB_PORT}', 'exec-out', 'screencap', '-p']
     with open(filename, 'wb') as f:
         f.write(subprocess.check_output(cmd))
 
-def screenshot(p):
+def screenshot():
     # Crear carpeta si no existe
     if not os.path.exists("screenshots"):
         os.makedirs("screenshots")
 
     # Nombre con timestamp
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    timestamp = t.strftime("%Y%m%d_%H%M%S")
     filename = f"screenshots/screen_{timestamp}.png"
 
     # Captura directa del emulador
-    cmd = f"adb -s {p} exec-out screencap -p"
+    cmd = f"C:/LDPlayer/LDPlayer9/adb.exe -s {config.ADB_PORT} exec-out screencap -p"
     with open(filename, "wb") as f_out:
         subprocess.run(cmd.split(), stdout=f_out)
 
     return filename
 
-def tap(x, y, port):
-    os.system(f'C:/Windows/platform-tools/adb.exe -s emulator-{str(port)} shell input tap {str(x)} {str(y)}')
+def tap(x, y):
+    os.system(f'C:/LDPlayer/LDPlayer9/adb.exe -s {config.ADB_PORT} shell input tap {x} {y}')
+
 
 def human_tap(x1, x2, y1, y2):
     x = random.randint(x1, x2)
     y = random.randint(y1, y2)
-    f.tap(x, y, p)
+    tap(x, y)
 
 
-def swipe(port): 
-  os.system('C:/Windows/platform-tools/adb.exe -s emulator-' + port + ' shell  input touchscreen swipe 1450 150 900 650 500 ')
+def swipe(): 
+  os.system('C:/LDPlayer/LDPlayer9/adb.exe -s ' + config.ADB_PORT + ' shell  input touchscreen swipe 1450 150 900 650 500 ')
 
-def swipe2(port): 
-  os.system('C:/Windows/platform-tools/adb.exe -s emulator-' + port + ' shell  input touchscreen swipe 1900 850 100 850 500 ')
+def swipe2(): 
+  os.system('C:/LDPlayer/LDPlayer9/adb.exe -s ' + config.ADB_PORT + ' shell  input touchscreen swipe 1900 850 100 850 500 ')
 
-def find(port): 
+def find(): 
   print(">>> entro en find <<<")
-  tap(100, 1000, port)
+  tap(100, 1000)
   t.sleep(0.3)
   print(">>> find despes de sleeep <<<")
-  tap(1375, 650, port)
+  tap(1375, 650)
   print(">>> find despues de sleep y tap <<<")
 
-def next(port):
-  tap(1750, 800, port)
+def next():
+  tap(1750, 800)
 
 
 def checkloot(port):
@@ -110,9 +112,9 @@ def checkpixel(port):
 
 
 
-def checkpixelBB(port,x,y):
-    filename = f"Pictures/{port}bb.png"
-    screenshot(port, filename)
+def checkpixelBB(x,y):
+    filename = f"Pictures/{config.ADB_PORT}bb.png"
+    screenshot(config.ADB_PORT, filename)
     checkp = Image.open(filename)
     return checkp.getpixel((x, y))
 
