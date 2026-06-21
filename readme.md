@@ -1,5 +1,5 @@
 # Clash of Clans Bot (Wal CoC Bot)
-
+#   -------  B E T A -----------
 Folked from other repository: 
 Credits to him, but was not working to me, at least Bulder base
 
@@ -12,6 +12,50 @@ Below info from original repo
 My comments:
  - BuilderBot
      - new button to farm only elixir, ..  find attacck and exit
+
+
+## 📁 Estructura del proyecto
+
+### [builderbot.py](ca://s?q=Explicar_builderbot_py)
+Interfaz gráfica (GUI) del bot.  
+Gestiona:
+- Botones Start/Stop  
+- Creación y control del hilo de farmeo  
+- Flag `bot_running`  
+- Llamadas a `farm_loop()`  
+
+### [gameflow.py](ca://s?q=Explicar_gameflow_py)
+Controla el flujo completo del farmeo:
+- `farm_until_full()`  
+- Ciclos de ataque  
+- Rendición  
+- Vuelta a Home  
+- Recogida de elixir rosa  
+- Uso de `smart_sleep()` para permitir STOP inmediato  
+
+### [attacks.py](ca://s?q=Explicar_attacks_py)
+Contiene la lógica de ataque:
+- `BBFarm()`  
+- `SSFarm()`  
+- `find()`  
+- Taps, swipes y despliegue de tropas  
+- Funciones específicas de Builder Base  
+
+### [func.py](ca://s?q=Explicar_func_py)
+Funciones utilitarias:
+- `tap()`  
+- `swipe()`  
+- Capturas de pantalla  
+- Logs  
+- Detección de píxeles  
+- Conexión ADB  
+
+### [config/](ca://s?q=Explicar_config_folder)
+Carpeta opcional para imágenes, plantillas o configuraciones.
+
+### [README.md](ca://s?q=Explicar_README)
+Documentación del proyecto.
+
 
 ####  Original information ------
 ## Features
