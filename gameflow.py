@@ -1,12 +1,12 @@
 import time as t
 import func as f
 import attacks as a
+from botstate import is_running
 
 import random
 from func import tap
 
-#from builderbot import Bbot_running
-
+print(">>> aqui gameflow aaaaaa <<<")
 
 
 # -----------------------------
@@ -76,19 +76,19 @@ def wait_for_battle_end():
 def collect_loot():
     f.log("[GameFlow] Recogiendo botín…")
 
-    f.tap(950, 900, p)
+    f.tap(950, 900)
     t.sleep(2)
 
-    f.swipe(p)
+    f.swipe()
     t.sleep(1)
 
-    f.tap(871, 521, p)
+    f.tap(871, 521)
     t.sleep(1)
 
-    f.tap(1400, 920, p)
+    f.tap(1400, 920)
     t.sleep(1)
 
-    f.tap(1600, 100, p)
+    f.tap(1600, 100)
     t.sleep(1)
 
     f.log("[GameFlow] Botín recogido")
@@ -121,6 +121,9 @@ def farm_until_full():
         f.log(">>> Nuevo ciclo de 10 ataques <<<")
 
         for i in range(10):
+            if not is_running():
+                return True
+
             f.log(f">>> Ataque {i+1}/10 <<<")
 
             # 0. Buscar aldea
@@ -150,7 +153,8 @@ def farm_until_full():
 
     print(">>> Almacén lleno. Fin del ciclo. <<<")
     
-    Bbot_running.clear()
+    return True   # ← señal para parar
+
 
 
 

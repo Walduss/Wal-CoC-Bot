@@ -5,6 +5,9 @@ import threading
 import func as f
 import attacks as a
 import gameflow as gf
+from botstate import Bbot_running, start, stop
+
+print(">>> aqui builder aaaaaa <<<")
 
 
 # -----------------------------
@@ -12,7 +15,6 @@ import gameflow as gf
 # -----------------------------
 
 Bbot_thread = None
-Bbot_running = threading.Event()
 
 
 # -----------------------------
@@ -22,7 +24,7 @@ Bbot_running = threading.Event()
 def bttn_start_BBot():
     global Bbot_thread
     if not Bbot_running.is_set():
-        Bbot_running.set()
+        start()
         Bbot_thread = threading.Thread(target=BBot, daemon=True)
         Bbot_thread.start()
         log("BBot started.")
@@ -31,14 +33,14 @@ def bttn_start_BBot():
 def bttn_start_Farm():
     global Bbot_thread
     if not Bbot_running.is_set():
-        Bbot_running.set()
-        Bbot_thread = threading.Thread(target=Farm_loop, daemon=True)
+        start()
+        Bbot_thread = threading.Thread(target=farm_loop, daemon=True)
         Bbot_thread.start()
         log("Farm started.")
 
 
 def bttn_stop():
-    Bbot_running.clear()
+    stop()
     log("Stopping bot...")
 
 
@@ -46,10 +48,16 @@ def bttn_stop():
 #   BUCLE PRINCIPAL DE FARM
 # -----------------------------
 
-def Farm_loop():
+def farm_loop():
     while Bbot_running.is_set():
         #gf.OLD_run_farm_cycle()
-        gf.farm_until_full()
+        full = gf.farm_until_full()
+
+        if full:
+            log("Storage full. Stopping bot.")
+            stop()
+            break
+
         
 
 
@@ -59,7 +67,7 @@ def Farm_loop():
 
 def BBot():
     while Bbot_running.is_set():
-        f.find(p)
+        f.find()
         t.sleep(5)
 
         secondattack = False
