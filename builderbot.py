@@ -1,102 +1,38 @@
-import time as t
 import customtkinter as ctk
-import threading
 
 import func as f
-import attacks as a
-import gameflow as gf
-from botstate import Bbot_running, start, stop
+import botcontroller as controller
 
 print(">>> aqui builder aaaaaa <<<")
-
-
-# -----------------------------
-#   CONFIGURACIÓN INICIAL
-# -----------------------------
-
-Bbot_thread = None
 
 
 # -----------------------------
 #   FUNCIONES DE BOTONES
 # -----------------------------
 
-def bttn_start_BBot():
-    global Bbot_thread
-    if not Bbot_running.is_set():
-        start()
-        Bbot_thread = threading.Thread(target=BBot, daemon=True)
-        Bbot_thread.start()
-        log("BBot started.")
-
-
 def bttn_start_Farm():
-    global Bbot_thread
-    if not Bbot_running.is_set():
-        start()
-        Bbot_thread = threading.Thread(target=farm_loop, daemon=True)
-        Bbot_thread.start()
-        log("Farm started.")
+    controller.start_farm()
 
 
 def bttn_stop():
-    stop()
-    log("Stopping bot...")
+    controller.stop()
 
 
-# -----------------------------
-#   BUCLE PRINCIPAL DE FARM
-# -----------------------------
-
-def farm_loop():
-    while Bbot_running.is_set():
-        #gf.OLD_run_farm_cycle()
-        full = gf.farm_until_full()
-
-        if full:
-            log("Storage full. Stopping bot.")
-            stop()
-            break
-
-        
+def bttn_screenshot():
+    try:
+        filename = f.screenshot()
+        log(f"Screenshot saved: {filename}")
+    except Exception as e:
+        log(f"Screenshot failed: {e}")
 
 
-# -----------------------------
-#   HILO ANTIGUO BBOT
-# -----------------------------
-
-def BBot():
-    while Bbot_running.is_set():
-        f.find()
-        t.sleep(5)
-
-        secondattack = False
-        log("attack started")
-
-        a.BB()
-        t.sleep(10)
-
-        while f.checkpixelBB(p, 888, 900) != (180, 230, 125, 255):
-            t.sleep(1)
-
-            if f.checkpixelBB(p, 1862, 815) != (255, 255, 255, 255) and not secondattack:
-                secondattack = True
-                log("round 2")
-                a.BB2()
-                t.sleep(10)
-
-        log("attack finished")
-        f.tap(950, 900, p)
-        t.sleep(2)
-        f.swipe(p)
-        log("collecting loot")
-        t.sleep(0.5)
-        f.tap(871, 521, p)
-        t.sleep(0.5)
-        f.tap(1400, 920, p)
-        t.sleep(1)
-        f.tap(1600, 100, p)
-        t.sleep(1)
+def bttn_test():
+    log("Running test: test_swipe_and_tap_cart()")
+    try:
+        f.test_swipe_and_tap_cart()
+        log("Test swipe completed")
+    except Exception as e:
+        log(f"Test swipe failed: {e}")
 
 
 # -----------------------------
@@ -105,20 +41,26 @@ def BBot():
 
 App = ctk.CTk()
 App.title("Wal CoC BBot")
-App.geometry("700x400")
+# Ventana más estrecha para no tapar tanto lo que hay detrás
+App.geometry("400x360")
 
 # Marco de botones
 App.button_frame = ctk.CTkFrame(App)
-App.button_frame.pack(pady=10)
-
-App.button_BBot = ctk.CTkButton(App.button_frame, text="Start BBot", command=bttn_start_BBot)
-App.button_BBot.grid(row=0, column=0, padx=5)
+App.button_frame.pack(pady=10, padx=10)
+App.button_frame.columnconfigure(0, weight=1)
+App.button_frame.columnconfigure(1, weight=1)
 
 App.button_Farm = ctk.CTkButton(App.button_frame, text="Start Farm", command=bttn_start_Farm)
-App.button_Farm.grid(row=0, column=1, padx=5)
+App.button_Farm.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
 
 App.button_Stop = ctk.CTkButton(App.button_frame, text="Stop", command=bttn_stop)
-App.button_Stop.grid(row=0, column=2, padx=5)
+App.button_Stop.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+
+App.button_Screenshot = ctk.CTkButton(App.button_frame, text="Screenshot", command=bttn_screenshot)
+App.button_Screenshot.grid(row=1, column=0, padx=5, pady=5, sticky="ew")
+
+App.button_Test = ctk.CTkButton(App.button_frame, text="Test", command=bttn_test)
+App.button_Test.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
 # Marco principal
 App.content_frame = ctk.CTkFrame(App)

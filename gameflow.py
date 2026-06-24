@@ -35,10 +35,17 @@ def tap_return_home():
 #  RECOGER ELIXIR ROSA
 # -------------------------
 def collect_pink_elixir():
-    x = random.randint(50, 200)
-    y = random.randint(300, 600)
-    tap(x, y)
-    t.sleep(1)
+    f.log("[Elixir] Moviendo cámara y abriendo Carro…")
+    f.human_swipe_and_tap_to_cart(200)
+
+    f.log("[Elixir] Pulsando botón Recoger…")
+
+    # Botón verde "Recoger"
+    f.log("[Elixir] AQUI L TAP COMMENTED.")
+    #f.human_tap(950, 1350, 120, 120)
+
+    f.log("[Elixir] Recompensa recogida.")
+    t.sleep(5)  # Espera un segundo para asegurar que la acción se complete
 
 # -------------------------
 #  COMPROBAR SI EL ALMACÉN ESTÁ LLENO
@@ -79,7 +86,7 @@ def collect_loot():
     f.tap(950, 900)
     t.sleep(2)
 
-    f.swipe()
+    f.swipe1()
     t.sleep(1)
 
     f.tap(871, 521)
@@ -120,7 +127,7 @@ def farm_until_full():
 
         f.log(">>> Nuevo ciclo de 10 ataques <<<")
 
-        for i in range(10):
+        for i in range(10):  ## numero de ataques por ciclo (10) 
             if not is_running():
                 return True
 
