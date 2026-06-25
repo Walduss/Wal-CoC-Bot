@@ -1,14 +1,18 @@
 import os
+import shutil
 import time as t
 from PIL import Image, ImageEnhance
-#import easyocr
+from PIL.ImageChops import screen
+import easyocr
+import cv2
+import numpy as np
 import random as r
 import subprocess
 import random
 
 import config
 
-# reader = easyocr.Reader(['en'])
+reader = easyocr.Reader(['en'], gpu=False)
 
 def log(msg):
     pass  # será reemplazada por builderbot
@@ -30,11 +34,149 @@ def screenshot():
 
     return filename
 
+
+def ocr_image(filename, region=None, allowlist=None, detail=0):
+    """OCR sobre una imagen guardada, opcionalmente recortando una región."""
+    with Image.open(filename) as photo:
+        if region:
+            photo = photo.crop(region)
+        photo = photo.convert("L")
+        photo = ImageEnhance.Contrast(photo).enhance(2.0)
+        image_np = np.array(photo)
+
+    try:
+        return reader.readtext(image_np, allowlist=allowlist, detail=detail)
+    except Exception as e:
+        log(f"[OCR] Error procesando imagen {filename}: {e}")
+        return []
+
+
+def recognize_screenshot(region=None, allowlist=None):
+    filename = screenshot()
+    return ocr_image(filename, region=region, allowlist=allowlist, detail=0)
+
+
+def find_template(haystack_path, needle_path, threshold=0.8):
+    """Busca una plantilla en una imagen y devuelve la posición si la confianza es suficiente."""
+    screen = cv2.imread(haystack_path, cv2.IMREAD_GRAYSCALE)
+    template = cv2.imread(needle_path, cv2.IMREAD_GRAYSCALE)
+
+    if screen is None or template is None:
+        log(f"[TEMPLATE] No se pudo cargar imagenes: {haystack_path} / {needle_path}")
+        return None
+
+    result = cv2.matchTemplate(screen, template, cv2.TM_CCOEFF_NORMED)
+    _, max_val, _, max_loc = cv2.minMaxLoc(result)
+
+    if max_val < threshold:
+        return None
+
+    return {
+        "position": max_loc,
+        "confidence": float(max_val),
+        "size": (template.shape[1], template.shape[0]),
+        "scale": 1.0,
+    }
+
+
+def find_template_multiscale(haystack_path, needle_path, scales=(0.9, 1.0, 1.1), threshold=0.8):
+    """Busca una plantilla en varios tamaños para soportar pequeñas variaciones."""
+    screen = cv2.imread(haystack_path, cv2.IMREAD_GRAYSCALE)
+    template = cv2.imread(needle_path, cv2.IMREAD_GRAYSCALE)
+
+    if screen is None or template is None:
+        log(f"[TEMPLATE] No se pudo cargar imagenes: {haystack_path} / {needle_path}")
+        return None
+
+    best_result = None
+
+    for scale in scales:
+        new_w = int(template.shape[1] * scale)
+        new_h = int(template.shape[0] * scale)
+
+        if new_w < 10 or new_h < 10 or new_w > screen.shape[1] or new_h > screen.shape[0]:
+            continue
+
+        resized = cv2.resize(
+            template,
+            (new_w, new_h),
+            interpolation=cv2.INTER_AREA if scale < 1.0 else cv2.INTER_LINEAR,
+        )
+
+        result = cv2.matchTemplate(screen, resized, cv2.TM_CCOEFF_NORMED)
+        _, max_val, _, max_loc = cv2.minMaxLoc(result)
+
+        if max_val < threshold:
+            continue
+
+        candidate = {
+            "position": max_loc,
+            "confidence": float(max_val),
+            "size": (new_w, new_h),
+            "scale": float(scale),
+        }
+
+        if best_result is None or candidate["confidence"] > best_result["confidence"]:
+            best_result = candidate
+
+    return best_result
+
+
+def find_template_on_screen(template_path, threshold=0.8):
+    screenshot_path = screenshot()
+    return find_template(screenshot_path, template_path, threshold=threshold)
+
+
+def buscar_carro(total_offset=500):
+    log("Iniciando búsqueda del carro...")
+
+    # swipe_pixels = total_offset
+    # x1 = random.randint(600, 900)
+    # y1 = random.randint(300, 450)
+    # x2 = x1 + random.randint(-40, 40)
+    # y2 = y1 + swipe_pixels
+    # dur = random.randint(250, 400)
+
+    # log(f"[SWIPE] bajando pantalla: ({x1},{y1}) -> ({x2},{y2}) dur={dur}ms")
+    # swipe(x1, y1, x2, y2, dur)
+    # t.sleep(0.5)
+
+    swipe(900, 300, 900 - total_offset, 300 + total_offset, 300)
+    t.sleep(0.3)
+
+    screenshot_path = screenshot()
+
+    # import shutil
+    # shutil.copy(screenshot_path, "debug_last_screenshot.png")
+    # log("DEBUG: screenshot guardada como debug_last_screenshot.png")
+
+    result = find_template_multiscale(screenshot_path, "templates/carro_lleno.png", scales=(0.9, 1.0, 1.1), threshold=0.75)
+
+    if not result:
+        log("No se encontró carro_lleno.png, probando carro_lleno_1.png...")
+        result = find_template_multiscale(screenshot_path, "templates/carro_lleno_1.png", scales=(0.9, 1.0, 1.1), threshold=0.75)
+
+    if result:
+        log(f"Carro lleno detectado en {result['position']} scale={result['scale']} confidence={result['confidence']:.2f}")
+
+        cx = result["position"][0] + result["size"][0] // 2
+        cy = result["position"][1] + result["size"][1] // 2
+        log(f"[CARRO] encontrado en {result['position']}, tap en ({cx},{cy}) scale={result['scale']:.2f}")
+        tap(cx, cy)
+        t.sleep(0.4)
+        return True
+
+    log("Carro no encontrado")
+    log("[CARRO] no encontrado después del swipe hacia abajo")
+
+    return False
+
+
 def tap(x, y):
     os.system(f'C:/LDPlayer/LDPlayer9/adb.exe -s {config.ADB_PORT} shell input tap {x} {y}')
 
 
-def human_tap(x1, x2, y1, y2):
+def human_tap(x1, y1, x2, y2):
     x = random.randint(x1, x2)
     y = random.randint(y1, y2)
     tap(x, y)
@@ -56,7 +198,6 @@ def swipe(x1, y1, x2, y2, duration_ms):
     )
     os.system(cmd)
 
-    
 
 def swipe1():  # borrar si no esta en uso 
   os.system('C:/LDPlayer/LDPlayer9/adb.exe -s ' + config.ADB_PORT + ' shell  input touchscreen swipe 1450 150 900 650 500 ')
@@ -120,36 +261,38 @@ def test_swipe_and_tap_cart():
     human_tap(tap_x, tap_y, 60, 60)
 """
 
-def human_swipe_and_tap_to_cart(total_offset=500):
-    """
-    Mueve la cámara hacia arriba de forma humana y luego pulsa directamente
-    el Carro de Elixir, compensando lo que falte tras el swipe.
-    """
-    log("[debug] Iniciando human_swipe_and_tap_to_cart()")
-    # 1) Elegimos cuánto del movimiento será swipe
-    swipe_part = random.randint(int(total_offset * 0.5), int(total_offset * 0.8))
-    tap_part = total_offset - swipe_part  # lo que falta
+# def human_swipe_and_tap_to_cart(total_offset=500):
+#     """
+#     Hace un swipe hacia abajo, luego busca el carro y, si se localiza, hace tap.
+#     """
+#     log("[debug] Iniciando human_swipe_and_tap_to_cart()")
 
-    # 2) Swipe humano hacia arriba
-    x1 = random.randint(600, 900)
-    y1 = random.randint(900, 1100)
+#     swipe_pixels = total_offset
+#     x1 = random.randint(600, 900)
+#     y1 = random.randint(300, 450)
+#     x2 = x1 + random.randint(-40, 40)
+#     y2 = y1 + swipe_pixels
+#     dur = random.randint(250, 400)
 
-    x2 = x1 + random.randint(-40, 40)
-    y2 = y1 - swipe_part
+#     log(f"[SWIPE] bajando pantalla: ({x1},{y1}) -> ({x2},{y2}) dur={dur}ms")
+#     swipe(x1, y1, x2, y2, dur)
+#     t.sleep(0.5)
 
-    dur = random.uniform(0.18, 0.35)
-    swipe(x1, y1, x2, y2, dur)
+#     screenshot_path = screenshot()
+#     log("[debug] screenshot para buscar carro guardada")
 
-    t.sleep(random.uniform(0.15, 0.35))
+#     result = find_template_multiscale(screenshot_path, "templates/carro_lleno.png", scales=(0.9, 1.0, 1.1), threshold=0.75)
 
-    # 3) Tap final compensado (este es el que toca el Carro)
-    #    Se calcula en función de lo que falta por subir
-    carro_x = random.randint(200, 300)
-    carro_y = (y1 - swipe_part) - tap_part + random.randint(-10, 10)
+#     if result:
+#         cx = result["position"][0] + result["size"][0] // 2
+#         cy = result["position"][1] + result["size"][1] // 2
+#         log(f"[CARRO] encontrado en {result['position']}, tap en ({cx},{cy}) scale={result['scale']:.2f}")
+#         tap(cx, cy)
+#         t.sleep(0.4)
+#         return True
 
-    #human_tap(carro_x, carro_y, 80, 80)
-    log("[debug] aqui el tap de human_swipe_and_tap_to_cart()")
-    t.sleep(1.0)
+#     log("[CARRO] no encontrado después del swipe hacia abajo")
+#     return False
 
 
 def find(): 

@@ -36,13 +36,16 @@ def tap_return_home():
 # -------------------------
 def collect_pink_elixir():
     f.log("[Elixir] Moviendo cámara y abriendo Carro…")
-    f.human_swipe_and_tap_to_cart(200)
+
+    if not f.buscar_carro(600):
+        f.log("[Elixir] Carro no encontrado, no se hace tap de recogida.")
+        return
 
     f.log("[Elixir] Pulsando botón Recoger…")
 
     # Botón verde "Recoger"
     f.log("[Elixir] AQUI L TAP COMMENTED.")
-    #f.human_tap(950, 1350, 120, 120)
+    f.human_tap(1301, 871, 1510, 944)
 
     f.log("[Elixir] Recompensa recogida.")
     t.sleep(5)  # Espera un segundo para asegurar que la acción se complete
@@ -104,30 +107,14 @@ def collect_loot():
 # -----------------------------
 #   CICLO DE ATAQUE FARM (1 ciclo)
 # -----------------------------
-def OLD_run_farm_cycle():
-    find_match()
-    t.sleep(2)          # ← necesario para que cargue la aldea
-    a.BBFarm()          # ataque puro
 
 
-    f.log("[BBF] saco Foto")
-    f.screenshot() 
-    f.log("[BBF] despues de saco foto") 
-
-    tap_surrender_button()
-    t.sleep(1)
-    confirm_surrender()
-
-
-    wait_for_battle_end()
-    collect_loot()
-
-def farm_until_full():
+def farm_until_full(attacks_per_cycle=2):
     while not is_elixir_full():
 
-        f.log(">>> Nuevo ciclo de 10 ataques <<<")
+        f.log(f">>> Nuevo ciclo de {attacks_per_cycle} ataques <<<")
 
-        for i in range(10):  ## numero de ataques por ciclo (10) 
+        for i in range(attacks_per_cycle):  ## numero de ataques por ciclo
             if not is_running():
                 return True
 

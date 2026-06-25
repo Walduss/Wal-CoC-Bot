@@ -59,7 +59,7 @@ def BBFarm():
     tropas = random.randint(1, 4)
     f.log(f"[BBF] Soltando {tropas} tropa(s)")
 
-    f.human_tap(1400, 1600, 500, 700)
+    f.human_tap(1400, 500, 1600, 700)
     t.sleep(0.35)
 
     if tropas > 1:
@@ -67,7 +67,7 @@ def BBFarm():
         Slot(2)
 
     for _ in range(tropas - 1):
-        f.human_tap(1400, 1600, 500, 700)
+        f.human_tap(1400, 500, 1600, 700)
         t.sleep(0.35)
 
 #    f.tap(1535,585,p)
