@@ -13,6 +13,11 @@ My comments:
  - BuilderBot
      - new button to farm only elixir, ..  find attacck and exit
 
+## 📊 Visitas al repositorio
+
+![Hits](https://hits.sh/Walduss/Wal-CoC-Bot.svg)
+
+[Ver estadísticas detalladas](https://hits.sh/Walduss/Wal-CoC-Bot/)
 
 ## 📁 Estructura del proyecto
 
