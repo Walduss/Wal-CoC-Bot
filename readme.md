@@ -19,6 +19,11 @@ My comments:
 
 [Ver estadísticas detalladas](https://hits.sh/Walduss/Wal-CoC-Bot/)
 
+## 📊 Visitas al repositorio
+
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=Walduss.Wal-CoC-Bot)
+
+
 ## 📁 Estructura del proyecto
 
 ### [builderbot.py](ca://s?q=Explicar_builderbot_py)
