@@ -6,7 +6,7 @@ from botstate import is_running
 import random
 from func import tap
 
-print(">>> aqui gameflow aaaaaa <<<")
+print(">>> GameFlow.py starting")
 
 
 # -----------------------------
@@ -118,7 +118,7 @@ def farm_until_full(attacks_per_cycle=2):
             if not is_running():
                 return True
 
-            f.log(f">>> Ataque {i+1}/10 <<<")
+            f.log(f">>> Ataque {i+1}/{attacks_per_cycle} <<<")
 
             # 0. Buscar aldea
             find_match()

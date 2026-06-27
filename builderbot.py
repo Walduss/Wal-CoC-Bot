@@ -3,6 +3,7 @@ import customtkinter as ctk
 
 import func as f
 import botcontroller as controller
+import paint as p
 
 
 # -----------------------------
@@ -44,9 +45,26 @@ def bttn_buscar_carro():
 
 
 def bttn_test():
-    log("Running test: test_swipe_and_tap_cart()")
+    log("Running test: hago swipe")
     try:
-        f.test_swipe_and_tap_cart()
+        xi = 1450
+        yi = 150
+        dy = parse_int(App.swipe_dy_entry.get(), default=400)
+
+        log("=== TEST INICIADO ===")
+
+        filename = f.screenshot()
+        log(f"Screenshot antes de saved: {filename}")
+
+        # 1) Screenshot real
+        p.paint_test()
+        
+        f.swipe(xi, yi, xi, yi + dy, 500)
+        #f.swipe_test()
+
+        filename = f.screenshot()
+        log(f"Screenshot despues de saved: {filename}")
+
         log("Test swipe completed")
     except Exception as e:
         log(f"Test swipe failed: {e}")

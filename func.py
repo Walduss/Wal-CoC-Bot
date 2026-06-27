@@ -18,14 +18,19 @@ def log(msg):
     pass  # será reemplazada por builderbot
 
 
-def screenshot():
+def screenshot(tag: str = None):
     # Crear carpeta si no existe
     if not os.path.exists("screenshots"):
         os.makedirs("screenshots")
 
     # Nombre con timestamp
     timestamp = t.strftime("%Y%m%d_%H%M%S")
-    filename = f"screenshots/screen_{timestamp}.png"
+
+        # Si viene un tag, lo añadimos al nombre
+    if tag:
+        filename = f"screenshots/screen_{timestamp}_{tag}.png"
+    else:
+        filename = f"screenshots/screen_{timestamp}.png"
 
     # Captura directa del emulador
     cmd = f"C:/LDPlayer/LDPlayer9/adb.exe -s {config.ADB_PORT} exec-out screencap -p"
@@ -127,7 +132,7 @@ def find_template_on_screen(template_path, threshold=0.8):
     return find_template(screenshot_path, template_path, threshold=threshold)
 
 
-def buscar_carro(total_offset=500):
+def buscar_carro(total_offset=500, debug=False):
     log("Iniciando búsqueda del carro...")
 
     # swipe_pixels = total_offset
@@ -141,10 +146,14 @@ def buscar_carro(total_offset=500):
     # swipe(x1, y1, x2, y2, dur)
     # t.sleep(0.5)
 
-    swipe(900, 300, 900 - total_offset, 300 + total_offset, 300)
+    #Swipe desde Zona Alta Arboles 1450, 150
+    xi = 1450
+    yi = 150
+    swipe(xi, yi, xi, yi + total_offset, 500)
+    #swipe(900, 300, 900 - total_offset, 300 + total_offset, 300)
     t.sleep(0.3)
 
-    screenshot_path = screenshot()
+    screenshot_path = screenshot("buscar_carro")
 
     # import shutil
     # shutil.copy(screenshot_path, "debug_last_screenshot.png")
@@ -199,12 +208,15 @@ def swipe(x1, y1, x2, y2, duration_ms):
     os.system(cmd)
 
 
-def swipe1():  # borrar si no esta en uso 
-  os.system('C:/LDPlayer/LDPlayer9/adb.exe -s ' + config.ADB_PORT + ' shell  input touchscreen swipe 1450 150 900 650 500 ')
+def swipe_test():  # borrar si no esta en uso 
+    log("me cago en su ....")
+    os.system('C:/LDPlayer/LDPlayer9/adb.exe -s ' + config.ADB_PORT + ' shell  input touchscreen swipe 1450 150 1450 550 500 ')
 
+def swipe1():  # borrar si no esta en uso 
+    os.system('C:/LDPlayer/LDPlayer9/adb.exe -s ' + config.ADB_PORT + ' shell  input touchscreen swipe 1450 150 900 650 500 ')
 
 def swipe2(): 
-  os.system('C:/LDPlayer/LDPlayer9/adb.exe -s ' + config.ADB_PORT + ' shell  input touchscreen swipe 1900 850 100 850 500 ')
+    os.system('C:/LDPlayer/LDPlayer9/adb.exe -s ' + config.ADB_PORT + ' shell  input touchscreen swipe 1900 850 100 850 500 ')
 
 def simple_swipe_up(pixels, duration_ms=300):
     """
