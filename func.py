@@ -134,6 +134,53 @@ def find_template_on_screen(template_path, threshold=0.8):
     screenshot_path = screenshot()
     return find_template(screenshot_path, template_path, threshold=threshold)
 
+def wait_for_stable_screen(timeout=5):
+    start = t.time()
+    last = screenshot("stable_check")
+
+    while t.time() - start < timeout:
+        t.sleep(0.3)
+        current = screenshot("stable_check2")
+
+        img1 = cv2.imread(last)
+        img2 = cv2.imread(current)
+
+        if img1 is None or img2 is None:
+            last = current
+            continue
+
+        diff = cv2.absdiff(img1, img2)
+        nonzero = np.count_nonzero(diff)
+
+        if nonzero < 500:  # pantalla estable
+            return current  # DEVUELVE LA CAPTURA ESTABLE
+
+        last = current
+
+    return last  # aunque no esté perfecta, devolvemos la última
+
+def stable_swipe(x1, y1, x2, y2, duration=500):
+    log("[STABLE SWIPE] esperando pantalla estable...")
+    before = wait_for_stable_screen()  # solo 1 captura
+
+    swipe(x1, y1, x2, y2, duration)
+    t.sleep(0.5)
+
+    after = screenshot("after_swipe")  # solo 1 captura
+
+    img1 = cv2.imread(before)
+    img2 = cv2.imread(after)
+
+    diff = cv2.absdiff(img1, img2)
+    nonzero = np.count_nonzero(diff)
+
+    if nonzero < 500:
+        log("[STABLE SWIPE] swipe NO ejecutado, reintentando...")
+        t.sleep(0.5)
+        swipe(x1, y1, x2, y2, duration)
+    else:
+        log("[STABLE SWIPE] swipe ejecutado correctamente")
+
 
 def buscar_carro(total_offset=500, debug=False):
     log("Iniciando búsqueda del carro...")
@@ -146,8 +193,10 @@ def buscar_carro(total_offset=500, debug=False):
     # yi = 150
 
 
-    t.sleep(2)  # Espera para estabilizar antes del swipe
+    # t.sleep(2)  # Espera para estabilizar antes del swipe
     log("Espero un poco antes del swipe para buscar el carro...")
+    wait_for_stable_screen()
+
 
 
     screenshot_path = screenshot(tag="pre_swipe")
@@ -156,10 +205,10 @@ def buscar_carro(total_offset=500, debug=False):
     p.draw_line_on_image(screenshot_path, xi, yi, xi, yi + total_offset, color=(255, 0, 0), width=5)
     log("pinto linea simulando swipe el carro...")
 
-    swipe(xi, yi, xi, yi + total_offset, 500)
+    stable_swipe(xi, yi, xi, yi + total_offset, 500)
     #swipe_test()  # swipe de prueba para buscar el carro
 
-    t.sleep(3)  # Esperar a que la pantalla se estabilice
+    #t.sleep(3)  # Esperar a que la pantalla se estabilice
     log("esperando 3 segundos después del swipe para buscar el carro...")
 
     screenshot_path = screenshot("buscar_carro")

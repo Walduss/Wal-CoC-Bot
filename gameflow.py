@@ -37,7 +37,7 @@ def tap_return_home():
 def collect_pink_elixir():
     f.log("[Elixir] Moviendo cámara y abriendo Carro…")
 
-    if not f.buscar_carro(600, debug=True):
+    if not f.buscar_carro(400, debug=True):
         f.log("[Elixir] Carro no encontrado, no se hace tap de recogida.")
         return
 
