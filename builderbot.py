@@ -39,7 +39,7 @@ def bttn_buscar_carro():
     try:
         dx = parse_int(App.swipe_dx_entry.get(), default=0)
         dy = parse_int(App.swipe_dy_entry.get(), default=400)
-        f.buscar_carro(dy)
+        f.buscar_carro(dy, debug=True)
     except Exception as e:
         log(f"Buscar Carro failed: {e}")
 

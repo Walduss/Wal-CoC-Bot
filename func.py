@@ -11,6 +11,9 @@ import subprocess
 import random
 
 import config
+import paint as p
+
+print(">>> func.py starting")
 
 reader = easyocr.Reader(['en'], gpu=False)
 
@@ -135,50 +138,115 @@ def find_template_on_screen(template_path, threshold=0.8):
 def buscar_carro(total_offset=500, debug=False):
     log("Iniciando búsqueda del carro...")
 
-    # swipe_pixels = total_offset
-    # x1 = random.randint(600, 900)
-    # y1 = random.randint(300, 450)
-    # x2 = x1 + random.randint(-40, 40)
-    # y2 = y1 + swipe_pixels
-    # dur = random.randint(250, 400)
+    # Swipe desde zona alta
+    xi = 1850
+    yi = 350
 
-    # log(f"[SWIPE] bajando pantalla: ({x1},{y1}) -> ({x2},{y2}) dur={dur}ms")
-    # swipe(x1, y1, x2, y2, dur)
-    # t.sleep(0.5)
+    # xi = 1450
+    # yi = 150
 
-    #Swipe desde Zona Alta Arboles 1450, 150
-    xi = 1450
-    yi = 150
+
+    t.sleep(2)  # Espera para estabilizar antes del swipe
+    log("Espero un poco antes del swipe para buscar el carro...")
+
+
+    screenshot_path = screenshot(tag="pre_swipe")
+    log("saco foto antes del swipe para buscar el carro...")
+
+    p.draw_line_on_image(screenshot_path, xi, yi, xi, yi + total_offset, color=(255, 0, 0), width=5)
+    log("pinto linea simulando swipe el carro...")
+
     swipe(xi, yi, xi, yi + total_offset, 500)
-    #swipe(900, 300, 900 - total_offset, 300 + total_offset, 300)
-    t.sleep(0.3)
+    #swipe_test()  # swipe de prueba para buscar el carro
+
+    t.sleep(3)  # Esperar a que la pantalla se estabilice
+    log("esperando 3 segundos después del swipe para buscar el carro...")
 
     screenshot_path = screenshot("buscar_carro")
 
-    # import shutil
-    # shutil.copy(screenshot_path, "debug_last_screenshot.png")
-    # log("DEBUG: screenshot guardada como debug_last_screenshot.png")
+    # --- ORDEN DE BÚSQUEDA ---
+    templates = []
 
-    result = find_template_multiscale(screenshot_path, "templates/carro_lleno.png", scales=(0.9, 1.0, 1.1), threshold=0.75)
+    if debug:
+        templates.append("templates/Elixir_Cart_1.png")
+        templates.append("templates/Elixir_Cart_2.png")
 
-    if not result:
-        log("No se encontró carro_lleno.png, probando carro_lleno_1.png...")
-        result = find_template_multiscale(screenshot_path, "templates/carro_lleno_1.png", scales=(0.9, 1.0, 1.1), threshold=0.75)
+    templates.append("templates/Elixir_Cart_3.png")
+    templates.append("templates/carro_extra_full.png")
 
+    # --- BÚSQUEDA SECUENCIAL ---
+    result = None
+    tpl_used = None
+
+    for tpl in templates:
+        log(f"Buscando {tpl} ...")
+        result = find_template_multiscale(
+            screenshot_path,
+            tpl,
+            scales=(0.9, 1.0, 1.1),
+            threshold=0.75
+        )
+
+        if not result:
+            continue  # no match, probar siguiente
+
+        # --- VALIDACIÓN SOLO PARA LA PLANTILLA ROJA ---
+        if tpl == "templates/carro_extra_full.png":
+            img = cv2.imread(screenshot_path)
+            x, y = result["position"]
+            w, h = result["size"]
+
+            if x > 5 and y > 5:
+                b, g, r = map(int, img[y-5, x-5])  # <-- FIX IMPORTANTE
+                if not (abs(r - 172) <= 20 and abs(g - 79) <= 20 and abs(b - 41) <= 20):
+                    log("Descartado: fondo NO rojo → seguir buscando")
+                    result = None
+                    continue  # seguir con la siguiente plantilla       
+
+        # Si llega aquí → match válido
+        tpl_used = tpl
+        break
+
+    # --- RESULTADO ---
     if result:
-        log(f"Carro lleno detectado en {result['position']} scale={result['scale']} confidence={result['confidence']:.2f}")
+        log(f"Carro detectado con {tpl_used} en {result['position']} scale={result['scale']} conf={result['confidence']:.2f}")
 
-        cx = result["position"][0] + result["size"][0] // 2
-        cy = result["position"][1] + result["size"][1] // 2
-        log(f"[CARRO] encontrado en {result['position']}, tap en ({cx},{cy}) scale={result['scale']:.2f}")
+        # ============================
+        #   RECORTE DEL ÁREA DETECTADA
+        # ============================
+        try:
+            if not os.path.exists("debug"):
+                os.makedirs("debug")
+
+            x, y = result["position"]
+            w, h = result["size"]
+
+            img = Image.open(screenshot_path)
+            crop = img.crop((x, y, x + w, y + h))
+
+            ts = t.strftime("%Y%m%d_%H%M%S")
+            crop_name = f"debug/carro_detectado_{ts}.png"
+            crop.save(crop_name)
+
+            log(f"[DEBUG] Recorte guardado en {crop_name}")
+        except Exception as e:
+            log(f"[DEBUG] Error guardando recorte: {e}")
+
+        # Tap en el centro
+        cx = x + w // 2
+        cy = y + h // 2
+
+        log(f"[DEBUG] x={x}, y={y}, w={w}, h={h}")
+        log(f"TAP REAL EN: {cx}, {cy}")
+        screenshot_path = screenshot("carro_encontrado")
+
         tap(cx, cy)
         t.sleep(0.4)
         return True
 
-    log("Carro no encontrado")
-    log("[CARRO] no encontrado después del swipe hacia abajo")
-
+    log("Carro no encontrado después del swipe")
     return False
+
 
 
 def tap(x, y):
@@ -205,11 +273,15 @@ def swipe(x1, y1, x2, y2, duration_ms):
         f'{config.ADB_PATH} -s {config.ADB_PORT} shell input touchscreen swipe '
         f'{x1} {y1} {x2} {y2} {duration_ms}'
     )
+
+    log(cmd)
     os.system(cmd)
 
 
 def swipe_test():  # borrar si no esta en uso 
     log("me cago en su ....")
+    log('C:/LDPlayer/LDPlayer9/adb.exe -s ' + config.ADB_PORT + ' shell  input touchscreen swipe 1450 150 1450 550 500 ')
+    
     os.system('C:/LDPlayer/LDPlayer9/adb.exe -s ' + config.ADB_PORT + ' shell  input touchscreen swipe 1450 150 1450 550 500 ')
 
 def swipe1():  # borrar si no esta en uso 
@@ -359,17 +431,28 @@ def checktrophies(port):
 
         checktrophies.result = reader.readtext(filename, allowlist='0123456789', detail=0)
 
+def get_pixel(x,y):
+    filename = screenshot()
+    checkp = Image.open(filename).convert("RGB")
+    return checkp.getpixel((x, y))
 
-def checkpixel(port):
+def check_pixel(x, y, target, tol=20):
+    r, g, b = get_pixel(x, y)
+
+    return (
+        abs(r - target[0]) <= tol and
+        abs(g - target[1]) <= tol and
+        abs(b - target[2]) <= tol
+    )
+
+def checkpixel_old(port):
     filename = f"Pictures/{port}return.png"
     screenshot(port, filename)
 
     checkp = Image.open(filename)
     return checkp.getpixel((898, 909)) == checkp.getpixel((969, 938))
 
-
-
-def checkpixelBB(x,y):
+def checkpixelBB_old(x,y):
     filename = f"Pictures/{config.ADB_PORT}bb.png"
     screenshot(config.ADB_PORT, filename)
     checkp = Image.open(filename)
